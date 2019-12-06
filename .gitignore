@@ -1,0 +1,15 @@
+/data/*
+/result/*
+/model/*
+/old-workspace/
+/model/pretrained_model/*
+__pycache__/
+build/
+detection.egg-info/
+.temp/*
+.idea/
+
+.fuse*
+*.so
+
+
