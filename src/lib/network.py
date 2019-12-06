@@ -23,12 +23,12 @@ class NetworkABC(abc.ABC, nn.Module):
     def save(self, save_path):
         if self.net is not None:
             torch.save(self.net.state_dict(), save_path)
-            print('[SAVE NETWORK] %s' % save_path)
+            print('[NETWORK] save: %s' % save_path)
 
     def load(self, load_path):
         if self.net is not None:
             self.net.load_state_dict(torch.load(load_path, map_location='cpu'))
-            print('[LOAD NETWORK] %s' % load_path)
+            print('[NETWORK] load: %s' % load_path)
 
 
 class MMODNetwork(NetworkABC):

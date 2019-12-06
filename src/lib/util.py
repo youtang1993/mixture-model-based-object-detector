@@ -1,8 +1,14 @@
+import os
 import math
 import torch
 import numpy as np
 
 epsilon = 1e-12
+
+
+def make_dir(dir_path):
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
 
 
 def cvt_torch2numpy(tensor):
@@ -20,10 +26,10 @@ def cvt_torch2numpy(tensor):
     return tensor
 
 
-def cvt_int2onehot(integer, range):
+def cvt_int2onehot(integer, onehot_size):
     if len(integer.shape) > 2:
         integer = integer.squeeze(dim=2)
-    onehot = torch.zeros(integer.shape + (range,)).float().cuda()
+    onehot = torch.zeros(integer.shape + (onehot_size,)).float().cuda()
     dim = len(onehot.shape) - 1
     onehot.scatter_(dim, integer.unsqueeze(dim=dim), 1)
     return onehot
@@ -199,4 +205,3 @@ def create_coord_map(coord_map_size, coord_range):
     x_map = x_map * unit_intv_w + unit_intv_w / 2
     y_map = y_map * unit_intv_h + unit_intv_h / 2
     return np.concatenate((x_map, y_map), axis=1)
-

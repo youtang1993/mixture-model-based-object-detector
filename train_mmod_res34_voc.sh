@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-# CUDA_DEVICE_ORDER=PCI_BUS_ID
-# CUDA_VISIBLE_DEVICES=0,1,2,3
 BASH_FILE="./train_standard_mmod_voc.sh"
 RESULT_DIR="./result/mmod/voc/`(date "+%Y%m%d%H%M%S")`-320x320-mmod_res34"
 
@@ -30,41 +28,42 @@ python3 ./src/run_mmod.py \
 --optimizer_args="{
     'lr': 0.003, 'momentum': 0.9, 'weight_decay': 0.0005
 }" \
---train_data_set_info="{
+--train_data_loader_info="{
     'dataset': 'voc',
-    'args': {
+    'dataset_args': {
         'roots': ['./data/voc-devkit-2007/VOC2007', './data/voc-devkit-2012/VOC2012'],
         'types': ['trainval', 'trainval'],
         'pre_proc': '', 'preproc_args': {'max_boxes': 100,
             'rgb_mean': [0.485, 0.456, 0.406],
             'rgb_std': [0.229, 0.224, 0.225]}
-    }
+    },
+    'shuffle': True, 'num_workers': 6
 }" \
---test_data_set_info="{
+--test_data_loader_info="{
     'dataset': 'voc',
-    'args': {
+    'dataset_args': {
         'roots': ['./data/voc-devkit-2007/VOC2007'],
         'types': ['test', 'test'],
         'pre_proc' '', 'preproc_args': {'max_boxes': 100,
             'rgb_mean': [0.485, 0.456, 0.406],
             'rgb_std': [0.229, 0.224, 0.225]}
-    }
+    },
+    'shuffle', False, 'num_workers': 1
 }" \
 --tester_info_list="[{
     'tester': 'image',
-    'args': {
+    'tester_args': {
         'n_samples': 50, 'conf_thresh': 0.2,
-        'max_boxes': 20, 'result_dir': $RESULT_DIR/image
+        'max_boxes': 20, 'result_root': $RESULT_DIR/image
     }
 }, {
     'tester': 'quant',
-    'args': {
-        'dataset': 'voc_2007_test',
-        'result_dir': $RESULT_DIR/quant
+    'tester_args': {
+        'result_root': $RESULT_DIR/quant
     }
 }]" \
 \
---train_args="{
+--training_args="{
     'init_iter': 0, 'max_iter': 0, 'max_grad': 7, 'print_intv': 100,
     'lr_decay_schd': '{40000: 0.1, 70000: 0.1}'
 }" \

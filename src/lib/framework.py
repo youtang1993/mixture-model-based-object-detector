@@ -28,7 +28,7 @@ class FrameworkABC(abc.ABC):
         pass
 
 
-class MMODFramework(object):
+class MMODFramework(FrameworkABC):
     def __init__(self, global_args, network, post_proc):
         super(MMODFramework, self).__init__(global_args, network, post_proc)
         devices = global_args['devices']
@@ -61,8 +61,8 @@ class MMODFramework(object):
 
                 sum_n_boxes = torch.sum(n_boxes)
                 mog_nll_loss = torch.sum(mog_nll_loss) / sum_n_boxes
-                sample_comb_nll_loss = torch.sum(sample_comb_nll_loss) / \
-                                       (sum_n_boxes * self.network.loss_func.n_samples)
+                sample_comb_nll_loss = \
+                    torch.sum(sample_comb_nll_loss) / (sum_n_boxes * self.network.loss_func.n_samples)
                 return {'mog_nll': mog_nll_loss,
                         'sample_comb_nll': sample_comb_nll_loss}
 
