@@ -59,6 +59,7 @@ python3 ./src/run_mmod.py \
 }, {
     'tester': 'quant',
     'tester_args': {
+        'dataset': 'voc_2007_test',
         'result_root': $RESULT_DIR/quant
     }
 }]" \
