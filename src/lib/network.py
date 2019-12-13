@@ -41,7 +41,7 @@ class MMODNetwork(NetworkABC):
         self.batch_size = global_args['batch_size']
         self.n_classes = global_args['n_classes']
 
-        self.limit_factor = network_args['limit_factor']
+        self.xy_limit_factor = network_args['xy_limit_factor']
         self.std_factor = network_args['std_factor']
         self.fmap_ch = network_args['fmap_ch']
 
@@ -73,7 +73,7 @@ class MMODNetwork(NetworkABC):
         self.xy_maps = net_util.create_xy_maps(self.batch_size, output_sizes, self.coord_range)
         self.def_coord = net_util.create_def_coord(self.batch_size, output_sizes, self.coord_range)
         self.limit_scale = net_util.create_limit_scale(
-            self.batch_size, output_sizes, self.coord_range, self.limit_factor)
+            self.batch_size, output_sizes, self.coord_range, self.xy_limit_factor)
 
         self.net.cuda(self.main_device)
         self.xy_maps = [xy_map.cuda(self.main_device) for xy_map in self.xy_maps]

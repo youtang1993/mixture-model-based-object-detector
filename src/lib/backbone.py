@@ -59,7 +59,7 @@ class ResNet34FPN(BackboneABC):
         self.net['stage_p7'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 1, 1, 0)
 
         if self.pretrained:
-            print('[Backbone]: load pretrained model')
+            print('[BACKBONE]: load pretrained model')
         else:
             init_modules_xavier(
                 [self.net['base'], self.net['stage_c3'], self.net['stage_c4'],

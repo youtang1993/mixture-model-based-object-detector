@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-BASH_FILE="./train_standard_mmod_voc.sh"
-RESULT_DIR="./result/mmod/voc/`(date "+%Y%m%d%H%M%S")`-320x320-mmod_res34"
+BASH_FILE="./train_mmod_res34_voc.sh"
+RESULT_DIR="./result/voc/`(date "+%Y%m%d%H%M%S")`-320x320-mmod_res34"
 
-python3 ./src/run_mmod.py \
+python3 ./src/run.py \
 --bash_file=${BASH_FILE} \
 --result_dir=${RESULT_DIR} \
 \
@@ -18,7 +18,7 @@ python3 ./src/run_mmod.py \
     'xy_limit_factor': 1.0, 'std_factor': 0.1
 }" \
 --loss_func_args="{
-    'lw_dict': {'mog_nll': 1.0, 'sample_comb_nll': 2.0},
+    'lw_dict': {'mog_nll': 1.0, 'mod_nll': 2.0},
     'n_samples': 5
 }" \
 --post_proc_args="{
@@ -33,7 +33,8 @@ python3 ./src/run_mmod.py \
     'dataset_args': {
         'roots': ['./data/voc-devkit-2007/VOC2007', './data/voc-devkit-2012/VOC2012'],
         'types': ['trainval', 'trainval'],
-        'pre_proc': '', 'preproc_args': {'max_boxes': 100,
+        'pre_proc': 'augm', 'pre_proc_args': {
+            'max_boxes': 100,
             'rgb_mean': [0.485, 0.456, 0.406],
             'rgb_std': [0.229, 0.224, 0.225]}
     },
@@ -44,11 +45,12 @@ python3 ./src/run_mmod.py \
     'dataset_args': {
         'roots': ['./data/voc-devkit-2007/VOC2007'],
         'types': ['test', 'test'],
-        'pre_proc' '', 'preproc_args': {'max_boxes': 100,
+        'pre_proc': 'base', 'pre_proc_args': {
+            'max_boxes': 100,
             'rgb_mean': [0.485, 0.456, 0.406],
             'rgb_std': [0.229, 0.224, 0.225]}
     },
-    'shuffle', False, 'num_workers': 1
+    'num_workers': 1
 }" \
 --tester_info_list="[{
     'tester': 'image',
@@ -65,10 +67,10 @@ python3 ./src/run_mmod.py \
 }]" \
 \
 --training_args="{
-    'init_iter': 0, 'max_iter': 0, 'max_grad': 7, 'print_intv': 100,
-    'lr_decay_schd': '{40000: 0.1, 70000: 0.1}'
+    'init_iter': 0, 'max_iter': 500, 'max_grad': 7, 'print_intv': 100,
+    'lr_decay_schd': {40000: 0.1, 70000: 0.1}
 }" \
---test_iters="[40000, 70000, 100000]" \
+--test_iters="[0, 40000, 70000, 100000]" \
 --snapshot_iters="[40000, 70000, 100000]" \
 \
 # --load_dir='enter snaphot-dir-path'

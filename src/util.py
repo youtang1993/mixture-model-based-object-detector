@@ -2,7 +2,7 @@ import os
 import shutil
 import torch
 import torch.nn as nn
-from .lib import util as lib_util
+from lib import util as lib_util
 
 
 def cvt_dict2str(value_dict):
@@ -50,6 +50,7 @@ def save_snapshot(network, optimizer, save_dir):
 
 
 def run_testers(tester_dict, framework, test_data_loader, test_dir):
+    lib_util.make_dir(test_dir)
     for key, tester in tester_dict.items():
         tester_dir = os.path.join(test_dir, key)
         tester.run(framework, test_data_loader, tester_dir)

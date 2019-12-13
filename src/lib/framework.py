@@ -32,18 +32,13 @@ class MMODFramework(FrameworkABC):
     def __init__(self, global_args, network, post_proc):
         super(MMODFramework, self).__init__(global_args, network, post_proc)
         devices = global_args['devices']
-        sync_bnorm = global_args['sync_bnorm']
         self.main_device = global_args['main_device']
 
         if len(devices) > 1:
-            if sync_bnorm:
-                network = convert_model(network)
-                self.network = nn.DataParallel(
-                    network, device_ids=devices, output_device=self.main_device)
-                patch_replication_callback(self.network)
-            else:
-                self.network = nn.DataParallel(
-                    network, device_ids=devices, output_device=self.main_device)
+            network = convert_model(network)
+            self.network = nn.DataParallel(
+                network, device_ids=devices, output_device=self.main_device)
+            patch_replication_callback(self.network)
         self.network.cuda(self.main_device)
 
     def forward(self, data_dict, train=True, grad_enable=True):

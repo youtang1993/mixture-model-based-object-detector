@@ -65,8 +65,8 @@ class PreProcABC(abc.ABC):
 class PreProcBase(PreProcABC):
     def __init__(self, global_args, pre_proc_args):
         super(PreProcBase, self).__init__(global_args, pre_proc_args)
-        self.rgb_mean = np.array(pre_proc_args['rgb_mean']).astype(np.float32)
-        self.rgb_std = np.array(pre_proc_args['rgb_std']).astype(np.float32)
+        self.rgb_mean = np.array(pre_proc_args['rgb_mean']).astype(np.float32).reshape(3, 1, 1)
+        self.rgb_std = np.array(pre_proc_args['rgb_std']).astype(np.float32).reshape(3, 1, 1)
 
     def __augment__(self, sample_dict):
         return sample_dict
@@ -77,6 +77,7 @@ class PreProcBase(PreProcABC):
         s_dict['img'] = (s_dict['img'] - self.rgb_mean) / self.rgb_std
         s_dict['boxes'][:, [0, 2]] *= (self.coord_range[1] / self.input_size[1])
         s_dict['boxes'][:, [1, 3]] *= (self.coord_range[0] / self.input_size[0])
+        s_dict['labels'] = np.expand_dims(s_dict['labels'], axis=1)
         return s_dict
 
     def inv_transform_batch(self, data_dict):
@@ -85,6 +86,7 @@ class PreProcBase(PreProcABC):
         d_dict['img'] = (np.transpose(d_dict['img'], axes=(0, 2, 3, 1)) * 255.0).astype(dtype=np.uint8)
         d_dict['boxes'][:, :, [0, 2]] *= (self.input_size[1] * self.coord_range[1])
         d_dict['boxes'][:, :, [1, 3]] *= (self.input_size[0] * self.coord_range[0])
+        d_dict['labels'] = np.squeeze(d_dict['labels'], axis=2)
         return d_dict
 
     def process(self, sample_dict):

@@ -20,7 +20,8 @@ class DatasetABC(abc.ABC, Dataset):
         self.global_args = global_args
         self.roots = dataset_args['roots']
         self.types = dataset_args['types']
-        self.pre_proc = get_pre_proc_dict()[dataset_args['pre_proc']]
+        pre_proc_class = get_pre_proc_dict()[dataset_args['pre_proc']]
+        self.pre_proc = pre_proc_class(global_args, dataset_args['pre_proc_args'])
 
     @ abc.abstractmethod
     def get_name2number_map(self):

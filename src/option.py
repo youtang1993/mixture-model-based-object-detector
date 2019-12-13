@@ -3,11 +3,12 @@ import yaml
 import argparse
 import torch
 from torch.utils.data import DataLoader
-from .lib.network import MMODNetwork
-from .lib.post_proc import MMODPostProc
-from .lib.framework import MMODFramework
-from .lib.loss_func import MMODLossFunction
-from .lib.dataset import get_dataset_dict
+from lib.network import MMODNetwork
+from lib.post_proc import MMODPostProc
+from lib.framework import MMODFramework
+from lib.loss_func import MMODLossFunction
+from lib.dataset import get_dataset_dict
+from lib.tester import get_tester_dict
 
 
 def parse_options():
@@ -18,8 +19,8 @@ def parse_options():
 
     parser.add_argument('--global_args', type=str)
     parser.add_argument('--network_args', type=str)
-    parser.add_argument('--postproc_args', type=str)
-    parser.add_argument('--lossfunc_args', type=str)
+    parser.add_argument('--post_proc_args', type=str)
+    parser.add_argument('--loss_func_args', type=str)
     parser.add_argument('--optimizer_args', type=str)
 
     parser.add_argument('--train_data_loader_info', type=str)
@@ -40,25 +41,29 @@ def parse_options():
     args.train_data_loader_info = cvt_str2python_data(args.train_data_loader_info)
     args.test_data_loader_info = cvt_str2python_data(args.test_data_loader_info)
     args.tester_info_list = cvt_str2python_data(args.tester_info_list)
-    args.training_args = cvt_str2python_data(args.training_args)
 
-    args.lr_decay_schd_dict = cvt_str2python_data(args.lr_decay_schd_dict)
-    args.lw_schd_dict = cvt_str2python_data(args.lw_schd_dict)
+    args.training_args = cvt_str2python_data(args.training_args)
     args.snapshot_iters = cvt_str2python_data(args.snapshot_iters)
     args.test_iters = cvt_str2python_data(args.test_iters)
 
     loss_func = create_loss_func(args.global_args, args.loss_func_args)
     network = create_network(args.global_args, args.network_args, loss_func)
+    network.build()
     post_proc = create_post_proc(args.global_args, args.post_proc_args)
     framework = create_framework(args.global_args, network, post_proc)
     optimizer = create_optimizer(args.optimizer_args, network)
 
     data_loader_dict = {
         'train': create_data_loader(args.global_args, args.train_data_loader_info),
-        'test': create_data_loader(args.global_args, args.test_data_loader_info)}
-    tester_dict = dict()
+        'test': create_data_loader(args.global_args, args.test_data_loader_info, True)}
 
-    if os.path.exists(args.load_dir):
+    tester_dict = dict()
+    for tester_info in args.tester_info_list:
+        tester_class = get_tester_dict()[tester_info['tester']]
+        tester_dict[tester_info['tester']] = \
+            tester_class(args.global_args, tester_info['tester_args'])
+
+    if (args.load_dir is not None) and os.path.exists(args.load_dir):
         network_path = os.path.join(args.load_dir, 'network.pth')
         optimizer_path = os.path.join(args.load_dir, 'optimizer.pth')
         network.load(network_path)
@@ -110,12 +115,16 @@ def create_optimizer(optimizer_args, network):
     return torch.optim.SGD(**optimizer_args)
 
 
-def create_data_loader(global_args, data_loader_info):
+def create_data_loader(global_args, data_loader_info, test=False):
     dataset_key = data_loader_info['dataset']
     dataset_args = data_loader_info['dataset_args']
 
-    batch_size = global_args['batch_size']
-    shuffle = data_loader_info['shuffle']
+    if test:
+        batch_size = 1
+        shuffle = False
+    else:
+        batch_size = global_args['batch_size']
+        shuffle = data_loader_info['shuffle']
     num_workers = data_loader_info['num_workers']
 
     dataset = get_dataset_dict()[dataset_key](global_args, dataset_args)

@@ -10,6 +10,13 @@ from lib.external.dataset import factory
 from . import tester_util
 
 
+def get_tester_dict():
+    return {
+        'image': ImageTester,
+        'quant': QuantTester,
+    }
+
+
 class TesterABC(abc.ABC):
     def __init__(self, global_args, tester_args):
         self.global_args = global_args
@@ -70,10 +77,9 @@ class QuantTester(TesterABC):
         super(QuantTester, self).__init__(global_args, tester_args)
         self.n_classes = global_args['n_classes']
         self.imdb_name = tester_args['dataset']
-        self.iou_thresh = tester_args['iou_thresh']
         assert self.imdb_name in ('voc_2007_test', 'coco_2017_val', 'coco_2017_test-dev')
 
-    def test(self, framework, data_loader, result_dir_name):
+    def run(self, framework, data_loader, result_dir):
         assert data_loader.batch_size == 1
         num_samples = data_loader.dataset.__len__()
         all_boxes = [[[] for _ in range(num_samples)] for _ in range(self.n_classes)]
@@ -83,7 +89,7 @@ class QuantTester(TesterABC):
         times = list()
         data_loader_pbar = tqdm(data_loader)
         for idx, data_dict in enumerate(data_loader_pbar):
-            output_dict, result_dict = framework.infer_forward(data_dict, flip=self.flip_test)
+            output_dict, result_dict = framework.infer_forward(data_dict)
             times.append(result_dict['time'])
             mean_time = np.mean(times[10:]) if len(times) > 10 else np.mean(times)
             data_loader_pbar.set_description('infer time: %.4f sec' % mean_time)
@@ -122,11 +128,8 @@ class QuantTester(TesterABC):
             data_dict.clear()
 
         # create result directories
-        if not os.path.exists(self.result_dir):
-            os.mkdir(self.result_dir)
-        result_dir_path = os.path.join(self.result_dir, result_dir_name)
-        if not os.path.exists(result_dir_path):
-            os.mkdir(result_dir_path)
+        if not os.path.exists(result_dir):
+            os.mkdir(result_dir)
 
         dataset_root = data_loader.dataset.get_dataset_root()
         if isinstance(dataset_root, list):
@@ -135,18 +138,18 @@ class QuantTester(TesterABC):
 
         if 'coco' in self.imdb_name:
             sys_stdout = sys.stdout
-            result_file_path = open(os.path.join(result_dir_path, 'ap_ar.txt'), 'w')
+            result_file_path = open(os.path.join(result_dir, 'ap_ar.txt'), 'w')
             sys.stdout = result_file_path
-            imdb.evaluate_detections(all_boxes, result_dir_path)
+            imdb.evaluate_detections(all_boxes, result_dir)
             sys.stdout = sys_stdout
             result_file_path.close()
 
         else:
-            det_file_path = os.path.join(result_dir_path, 'detection_results.pkl')
+            det_file_path = os.path.join(result_dir, 'detection_results.pkl')
             with open(det_file_path, 'wb') as det_file:
                 pickle.dump(all_boxes, det_file, pickle.HIGHEST_PROTOCOL)
-            result_msg = imdb.evaluate_detections(all_boxes, result_dir_path)
-            result_file_path = os.path.join(result_dir_path, 'mean_ap.txt')
+            result_msg = imdb.evaluate_detections(all_boxes, result_dir)
+            result_file_path = os.path.join(result_dir, 'mean_ap.txt')
             with open(result_file_path, 'w') as file:
                 file.write(result_msg)
             os.remove(det_file_path)

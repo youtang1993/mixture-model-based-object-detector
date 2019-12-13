@@ -12,14 +12,14 @@ class LossFunctionABC(abc.ABC):
         pass
 
 
-class MMODLossFunction(object):
+class MMODLossFunction(LossFunctionABC):
     def __init__(self, global_args, loss_func_args):
         super(MMODLossFunction, self).__init__(global_args, loss_func_args)
         self.lw_dict = loss_func_args['lw_dict']
         self.n_samples = loss_func_args['n_samples']
         self.n_classes = global_args['n_classes']
         assert 'mog_nll' in self.lw_dict.keys()
-        assert 'mm_nll' in self.lw_dict.keys()
+        assert 'mod_nll' in self.lw_dict.keys()
 
     def forward(self, mu, sig, prob, pi, boxes, labels, n_boxes):
         xywh_nll_loss = loss_util.calc_mog_nll(mu, sig, pi, boxes, n_boxes)
@@ -28,5 +28,5 @@ class MMODLossFunction(object):
             prob, boxes, labels, n_boxes, self.n_samples, self.n_classes)
 
         mog_nll_loss = self.lw_dict['mog_nll'] * xywh_nll_loss
-        sample_comb_nll_loss = self.lw_dict['sample_comb_nll'] * sample_comb_nll_loss
+        sample_comb_nll_loss = self.lw_dict['mod_nll'] * sample_comb_nll_loss
         return mog_nll_loss, sample_comb_nll_loss
