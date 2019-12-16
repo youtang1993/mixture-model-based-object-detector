@@ -59,9 +59,7 @@ def parse_options():
 
     tester_dict = dict()
     for tester_info in args.tester_info_list:
-        tester_class = get_tester_dict()[tester_info['tester']]
-        tester_dict[tester_info['tester']] = \
-            tester_class(args.global_args, tester_info['tester_args'])
+        tester_dict[tester_info['tester']] = create_tester(args.global_args, tester_info)
 
     if (args.load_dir is not None) and os.path.exists(args.load_dir):
         network_path = os.path.join(args.load_dir, 'network.pth')
@@ -133,5 +131,5 @@ def create_data_loader(global_args, data_loader_info, test=False):
 
 
 def create_tester(global_args, tester_info):
-    for tester_info in tester_info_list:
-        pass
+    tester_class = get_tester_dict()[tester_info['tester']]
+    return tester_class(global_args, tester_info['tester_args'])
