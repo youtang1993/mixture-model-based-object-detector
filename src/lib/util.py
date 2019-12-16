@@ -35,9 +35,9 @@ def cvt_int2onehot(integer, onehot_size):
     return onehot
 
 
-def clip_boxes(boxes, img_h, img_w):
-    boxes[:, :, [0, 2]] = torch.clamp(boxes[:, :, [0, 2]], min=0, max=img_w - 1)
-    boxes[:, :, [1, 3]] = torch.clamp(boxes[:, :, [1, 3]], min=0, max=img_h - 1)
+def clip_boxes(boxes, size):
+    boxes[:, :, [0, 2]] = torch.clamp(boxes[:, :, [0, 2]], min=0, max=size[1] - 1)
+    boxes[:, :, [1, 3]] = torch.clamp(boxes[:, :, [1, 3]], min=0, max=size[0] - 1)
     return boxes
 
 

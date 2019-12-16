@@ -50,7 +50,7 @@ class ImageTester(TesterABC):
             pred_confs_s = util.cvt_torch2numpy(result_dict['confs_l'])[0]
             pred_labels_s = util.cvt_torch2numpy(result_dict['labels_l'])[0]
 
-            data_dict = pre_proc.inv_process(data_dict)
+            data_dict = pre_proc.inv_transform_batch(data_dict)
             img_s = data_dict['img'][0]
             gt_boxes_s = data_dict['boxes'][0]
             gt_labels_s = data_dict['labels'][0]
@@ -69,7 +69,6 @@ class ImageTester(TesterABC):
                 img_s, pred_boxes_s, pred_confs_s, pred_labels_s,
                 class_map, self.conf_thresh, self.max_boxes)
             scipy.misc.imsave(pred_img_path, pred_img_s)
-            sort_idx += 1
 
 
 class QuantTester(TesterABC):
@@ -84,15 +83,13 @@ class QuantTester(TesterABC):
         num_samples = data_loader.dataset.__len__()
         all_boxes = [[[] for _ in range(num_samples)] for _ in range(self.n_classes)]
 
-        # import cv2
-        s = 0
         times = list()
-        data_loader_pbar = tqdm(data_loader)
+        data_loader_pbar = tqdm.tqdm(data_loader)
         for idx, data_dict in enumerate(data_loader_pbar):
+
             output_dict, result_dict = framework.infer_forward(data_dict)
             times.append(result_dict['time'])
-            mean_time = np.mean(times[10:]) if len(times) > 10 else np.mean(times)
-            data_loader_pbar.set_description('infer time: %.4f sec' % mean_time)
+            data_loader_pbar.set_description('infer time: %.4f sec' % np.mean(times))
 
             # total predict boxes shape : (batch, # pred box, 4)
             # total predict boxes confidence shape : (batch, # pred box, 1)
@@ -115,25 +112,23 @@ class QuantTester(TesterABC):
 
             if len(confs_s.shape) == 1:
                 confs_s = np.expand_dims(confs_s, axis=1)
+
             for i, (cls_box, cls_conf, cls_label) in \
                     enumerate(zip(boxes_s, confs_s, labels_s)):
-
                 cls_box_with_conf = np.concatenate((cls_box, cls_conf), axis=0)
                 cls_box_with_conf = np.expand_dims(cls_box_with_conf, axis=0)
-                all_boxes[int(cls_label)][s].append(cls_box_with_conf)
+                all_boxes[int(cls_label)][idx].append(cls_box_with_conf)
 
             for c in range(self.n_classes):
-                all_boxes[c][s] = np.concatenate(all_boxes[c][s], axis=0) \
-                    if 0 < len(all_boxes[c][s]) else np.concatenate([[]], axis=0)
+                all_boxes[c][idx] = np.concatenate(all_boxes[c][idx], axis=0) \
+                    if 0 < len(all_boxes[c][idx]) else np.concatenate([[]], axis=0)
             data_dict.clear()
 
         # create result directories
         if not os.path.exists(result_dir):
             os.mkdir(result_dir)
 
-        dataset_root = data_loader.dataset.get_dataset_root()
-        if isinstance(dataset_root, list):
-            dataset_root = dataset_root[0]
+        dataset_root = data_loader.dataset.get_dataset_roots()[0]
         imdb = factory.get_imdb(self.imdb_name, dataset_root)
 
         if 'coco' in self.imdb_name:
@@ -155,4 +150,3 @@ class QuantTester(TesterABC):
             os.remove(det_file_path)
 
         all_boxes.clear()
-

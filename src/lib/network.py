@@ -86,7 +86,7 @@ class MMODNetwork(NetworkABC):
             def_coord = self.def_coord[:batch_size].cuda(device_idx)
             limit_scale = self.limit_scale[:batch_size].cuda(device_idx)
         else:
-            xy_maps = self.xy_maps[:batch_size]
+            xy_maps = [xy_map[:batch_size] for xy_map in self.xy_maps]
             def_coord = self.def_coord[:batch_size]
             limit_scale = self.limit_scale[:batch_size]
         return xy_maps, def_coord, limit_scale

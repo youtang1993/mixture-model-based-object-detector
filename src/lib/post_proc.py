@@ -72,7 +72,7 @@ class MMODPostProc(object):
         boxes = mu.transpose(1, 2).clone()
         boxes[:, :, [0, 2]] = boxes[:, :, [0, 2]] * (self.input_size[1] / self.coord_range[1])
         boxes[:, :, [1, 3]] = boxes[:, :, [1, 3]] * (self.input_size[0] / self.coord_range[0])
-        boxes = lib_util.boxes_clamp(boxes, self.input_size[0], self.input_size[1])
+        boxes = lib_util.clip_boxes(boxes, self.input_size)
         boxes = torch.cat([boxes.unsqueeze(dim=1)] * (self.n_classes - 1), dim=1)
         confs = prob[:, 1:]
 

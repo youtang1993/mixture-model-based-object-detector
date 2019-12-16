@@ -49,7 +49,7 @@ def main():
                     break
 
                 if global_step in args.training_args['lr_decay_schd'].keys():
-                    util.update_learning_rate(optimizer, args.lr_decay_schd_dict[global_step])
+                    util.update_learning_rate(optimizer, args.training_args['lr_decay_schd'][global_step])
 
             train_loss_dict, train_time = \
                 train_network_one_step(args, framework, optimizer, train_data_dict, global_step)

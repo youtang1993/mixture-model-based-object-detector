@@ -64,7 +64,7 @@ class MMODFramework(FrameworkABC):
             else:
                 s_t = time.time()
                 mu, sig, prob, pi = self.network.forward(image, loss=False)
-                boxes_l, confs_l, labels_l = self.post_proc.forward(mu, sig, prob, pi)
+                boxes_l, confs_l, labels_l = self.post_proc.forward(mu, prob, pi)
                 inf_time = time.time() - s_t
                 return {'mu': mu, 'sig': sig, 'prob': prob, 'pi': pi}, \
                        {'boxes_l': boxes_l, 'confs_l': confs_l, 'labels_l': labels_l, 'time': inf_time}

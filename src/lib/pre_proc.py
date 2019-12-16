@@ -84,18 +84,18 @@ class PreProcBase(PreProcABC):
         d_dict = lib_util.cvt_torch2numpy(data_dict)
         d_dict['img'] = d_dict['img'] * self.rgb_std + self.rgb_mean
         d_dict['img'] = (np.transpose(d_dict['img'], axes=(0, 2, 3, 1)) * 255.0).astype(dtype=np.uint8)
-        d_dict['boxes'][:, :, [0, 2]] *= (self.input_size[1] * self.coord_range[1])
-        d_dict['boxes'][:, :, [1, 3]] *= (self.input_size[0] * self.coord_range[0])
+        d_dict['boxes'][:, :, [0, 2]] *= (self.input_size[1] / self.coord_range[1])
+        d_dict['boxes'][:, :, [1, 3]] *= (self.input_size[0] / self.coord_range[0])
         d_dict['labels'] = np.squeeze(d_dict['labels'], axis=2)
         return d_dict
 
     def process(self, sample_dict):
         s_dict = self.__augment__(sample_dict)
+        img_size = np.array(s_dict['img'].shape)[:2]
         s_dict['img'], s_dict['boxes'] = pre_util.resize(s_dict['img'], s_dict['boxes'], self.input_size)
         s_dict['boxes'] = lib_util.clip_boxes_s(s_dict['boxes'], self.input_size, numpy=True)
 
         n_boxes = s_dict['boxes'].shape[0]
-        img_size = np.array(s_dict['img'].shape)[:2]
         s_dict = self.transform(s_dict)
         s_dict.update({'n_boxes': n_boxes, 'img_size': img_size})
         s_dict = self.__fill__(s_dict)

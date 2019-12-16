@@ -31,6 +31,10 @@ class DatasetABC(abc.ABC, Dataset):
     def get_number2name_map(self):
         pass
 
+    @ abc.abstractmethod
+    def get_dataset_roots(self):
+        pass
+
 
 class VOCDataset(DatasetABC):
     def __init__(self, global_args, dataset_args):
@@ -97,6 +101,9 @@ class VOCDataset(DatasetABC):
 
     def get_number2name_map(self):
         return self.number2name_map
+
+    def get_dataset_roots(self):
+        return self.roots
 
 
 class COCODataset(DatasetABC):
