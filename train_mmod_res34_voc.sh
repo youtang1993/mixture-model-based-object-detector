@@ -2,7 +2,7 @@
 
 BASH_FILE="./train_mmod_res34_voc.sh"
 RESULT_DIR="./result/voc/`(date "+%Y%m%d%H%M%S")`-320x320-mmod_res34"
-LOAD_DIR="./result/voc/20191215020456-320x320-mmod_res34/snapshot/0040000"
+# LOAD_DIR="./result/voc/20191215020456-320x320-mmod_res34/snapshot/0040000"
 
 python3 ./src/run.py \
 --bash_file=$BASH_FILE \
@@ -68,10 +68,10 @@ python3 ./src/run.py \
 }]" \
 \
 --training_args="{
-    'init_iter': 40000, 'max_iter': 100000, 'max_grad': 7, 'print_intv': 100,
+    'init_iter': 0, 'max_iter': 100000, 'max_grad': 7, 'print_intv': 100,
     'lr_decay_schd': {40000: 0.1, 70000: 0.1}
 }" \
 --test_iters="[40000, 70000, 100000]" \
 --snapshot_iters="[70000, 100000]" \
 \
---load_dir=$LOAD_DIR
+# --load_dir=$LOAD_DIR

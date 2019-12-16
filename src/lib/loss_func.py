@@ -22,11 +22,11 @@ class MMODLossFunction(LossFunctionABC):
         assert 'mod_nll' in self.lw_dict.keys()
 
     def forward(self, mu, sig, prob, pi, boxes, labels, n_boxes):
-        xywh_nll_loss = loss_util.calc_mog_nll(mu, sig, pi, boxes, n_boxes)
-        sample_comb_nll_loss = loss_util.calc_mod_mm_nll(
-            mu.detach(), sig.detach(), pi.detach(),
-            prob, boxes, labels, n_boxes, self.n_samples, self.n_classes)
+        mog_nll_loss = loss_util.calc_mog_nll(mu, sig, pi, boxes, n_boxes)
+        mod_nll_loss = loss_util.calc_mod_mm_nll(
+            mu.detach(), sig.detach(), pi.detach(), prob,
+            boxes, labels, n_boxes, self.n_samples, self.n_classes)
 
-        mog_nll_loss = self.lw_dict['mog_nll'] * xywh_nll_loss
-        sample_comb_nll_loss = self.lw_dict['mod_nll'] * sample_comb_nll_loss
-        return mog_nll_loss, sample_comb_nll_loss
+        mog_nll_loss = self.lw_dict['mog_nll'] * mog_nll_loss
+        mod_nll_loss = self.lw_dict['mod_nll'] * mod_nll_loss
+        return mog_nll_loss, mod_nll_loss

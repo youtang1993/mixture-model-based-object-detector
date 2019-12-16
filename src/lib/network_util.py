@@ -59,9 +59,8 @@ def create_def_coord(batch_size, output_sizes, coord_range):
 
 
 def create_box_coord_map(output_size, output_ch, coord_range):
-    bbox_offset = np.zeros((output_ch, 4, output_size[0], output_size[1]))
-    coord_map = lib_util.create_coord_map(output_size, coord_range)
-    bbox_offset[:, :2] += coord_map
+    box_coord_map = np.zeros((output_ch, 4, output_size[0], output_size[1]))
+    box_coord_map[:, :2] += lib_util.create_coord_map(output_size, coord_range)
 
     # gauss_ch: 4 --> ((0, 1, 2, 3), ...)
     ch_map = np.array(list(range(output_ch)))
@@ -81,13 +80,13 @@ def create_box_coord_map(output_size, output_ch, coord_range):
 
     w_map = w_map.reshape((output_ch, 1, 1))
     h_map = h_map.reshape((output_ch, 1, 1))
-    bbox_offset[:, 2] = w_map
-    bbox_offset[:, 3] = h_map
+    box_coord_map[:, 2] = w_map
+    box_coord_map[:, 3] = h_map
 
     # (1, 4, gauss_ch, gauss_h, gauss_w)
-    bbox_offset = np.transpose(bbox_offset, axes=(1, 0, 2, 3))
-    bbox_offset = np.expand_dims(bbox_offset, axis=0)
-    return bbox_offset
+    box_coord_map = np.transpose(box_coord_map, axes=(1, 0, 2, 3))
+    box_coord_map = np.expand_dims(box_coord_map, axis=0)
+    return box_coord_map
 
 
 def create_limit_scale(batch_size, output_sizes, coord_range, limit_factor):

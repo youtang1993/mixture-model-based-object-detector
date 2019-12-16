@@ -12,7 +12,7 @@ def get_backbone_dict():
     }
 
 
-class BackboneABC(nn.Module):
+class BackboneABC(abc.ABC, nn.Module):
     def __init__(self, network_args):
         super(BackboneABC, self).__init__()
         self.pretrained = network_args['pretrained']
@@ -52,36 +52,47 @@ class ResNet34FPN(BackboneABC):
         self.net['stage_c7'] = nn.Sequential(
             nn.ReLU(), nn.Conv2d(self.fmap_ch, self.fmap_ch, 3, 2, 1))
 
-        self.net['stage_p3'] = nn.Conv2d(self.inter_chs[0], self.fmap_ch, 1, 1, 0)
-        self.net['stage_p4'] = nn.Conv2d(self.inter_chs[1], self.fmap_ch, 1, 1, 0)
-        self.net['stage_p5'] = nn.Conv2d(self.inter_chs[2], self.fmap_ch, 1, 1, 0)
-        self.net['stage_p6'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 1, 1, 0)
-        self.net['stage_p7'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 1, 1, 0)
+        self.net['stage_p5_1'] = nn.Conv2d(self.inter_chs[2], self.fmap_ch, 1, 1, 0)
+        self.net['stage_p5_2'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 3, 1, 1)
+        self.net['stage_p5_up'] = nn.Upsample(scale_factor=2, mode='nearest')
+
+        self.net['stage_p4_1'] = nn.Conv2d(self.inter_chs[1], self.fmap_ch, 1, 1, 0)
+        self.net['stage_p4_2'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 3, 1, 1)
+        self.net['stage_p4_up'] = nn.Upsample(scale_factor=2, mode='nearest')
+
+        self.net['stage_p3_1'] = nn.Conv2d(self.inter_chs[0], self.fmap_ch, 1, 1, 0)
+        self.net['stage_p3_2'] = nn.Conv2d(self.fmap_ch, self.fmap_ch, 3, 1, 1)
 
         if self.pretrained:
             print('[BACKBONE] load image-net pre-trained model')
         else:
             init_modules_xavier(
-                [self.net['base'], self.net['stage_c3'], self.net['stage_c4'],
-                 self.net['stage_c5']])
+                [self.net['base'], self.net['stage_c3'],
+                 self.net['stage_c4'], self.net['stage_c5']])
         init_modules_xavier(
-            [self.net['stage_c6'], self.net['stage_c7'], self.net['stage_p3'],
-             self.net['stage_p4'], self.net['stage_p5'], self.net['stage_p6'],
-             self.net['stage_p7']])
+            [self.net['stage_c6'], self.net['stage_c7'],
+             self.net['stage_p5_1'], self.net['stage_p5_2'],
+             self.net['stage_p4_1'], self.net['stage_p4_2'],
+             self.net['stage_p3_1'], self.net['stage_p3_2']])
 
     def forward(self, image):
         base_fmap = self.net['base'].forward(image)
         fmap_c3 = self.net['stage_c3'].forward(base_fmap)
         fmap_c4 = self.net['stage_c4'].forward(fmap_c3)
         fmap_c5 = self.net['stage_c5'].forward(fmap_c4)
-        fmap_c6 = self.net['stage_c6'].forward(fmap_c5)
-        fmap_c7 = self.net['stage_c7'].forward(fmap_c6)
+        fmap_p6 = self.net['stage_c6'].forward(fmap_c5)
+        fmap_p7 = self.net['stage_c7'].forward(fmap_p6)
 
-        fmap_p3 = self.net['stage_p3'].forward(fmap_c3)
-        fmap_p4 = self.net['stage_p4'].forward(fmap_c4)
-        fmap_p5 = self.net['stage_p5'].forward(fmap_c5)
-        fmap_p6 = self.net['stage_p6'].forward(fmap_c6)
-        fmap_p7 = self.net['stage_p7'].forward(fmap_c7)
+        _fmap_p5 = self.net['stage_p5_1'].forward(fmap_c5)
+        fmap_p5 = self.net['stage_p5_2'].forward(_fmap_p5)
+        _fmap_p5_up = self.net['stage_p5_up'].forward(_fmap_p5)
+
+        _fmap_p4 = self.net['stage_p4_1'].forward(fmap_c4) + _fmap_p5_up
+        fmap_p4 = self.net['stage_p4_2'].forward(_fmap_p4)
+        _fmap_p4_up = self.net['stage_p4_up'].forward(_fmap_p4)
+
+        _fmap_p3 = self.net['stage_p3_1'].forward(fmap_c3) + _fmap_p4_up
+        fmap_p3 = self.net['stage_p3_2'].forward(_fmap_p3)
         return [fmap_p3, fmap_p4, fmap_p5, fmap_p6, fmap_p7]
 
 
