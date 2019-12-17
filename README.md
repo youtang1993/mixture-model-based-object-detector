@@ -43,15 +43,15 @@ http://cocodataset.org/#download (coco-2017)
 
 Usage
 -----
-####Training
+Training
 ```
 # run_mmod_(voc or coco).sh
 --training_args="{'max_iter': maximum number of iterations, ...}"
 
 # command
-.../root-directory$ bash run_mmod_(voc or coco).sh
+.../(root-directory)$ bash run_mmod_(voc or coco).sh
 ```
-####Test
+Test
 ```
 # run_mmod_(voc or coco).sh
 --training_args="{'init_iter': 0, 'max_iter': 0, ...}",
@@ -59,7 +59,7 @@ Usage
 --load_dir="path of the snapshot directory that has network.pth file"
 
 # command
-.../root-directory$ bash run_mmod_(voc or coco).sh
+.../(root-directory)$ bash run_mmod_(voc or coco).sh
 ```
 
 Citation

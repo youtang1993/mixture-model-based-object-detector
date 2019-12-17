@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 python3 ./src/run.py \
---bash_file="./train_mmod_res34_voc.sh" \
+--bash_file="./run_mmod_voc.sh" \
 --result_dir="./result/`(date "+%Y%m%d%H%M%S")`-voc-320x320-mmod_res34fpn" \
 \
 --global_args="{
@@ -64,10 +64,10 @@ python3 ./src/run.py \
 }]" \
 \
 --training_args="{
-    'init_iter': 0, 'max_iter': 100000, 'max_grad': 7, 'print_intv': 100,
+    'init_iter': 70000, 'max_iter': 100000, 'max_grad': 7, 'print_intv': 100,
     'lr_decay_schd': {40000: 0.1, 70000: 0.1}
 }" \
 --test_iters="[40000, 70000, 90000, 95000, 100000]" \
 --snapshot_iters="[40000, 70000, 100000]" \
 \
-#--load_dir=""
+--load_dir="./result/20191217175421-voc-320x320-mmod_res34/snapshot/0070000"
