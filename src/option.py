@@ -46,6 +46,8 @@ def parse_options():
     args.snapshot_iters = cvt_str2python_data(args.snapshot_iters)
     args.test_iters = cvt_str2python_data(args.test_iters)
 
+    assert args.global_args['main_device'] in args.global_args['devices']
+
     loss_func = create_loss_func(args.global_args, args.loss_func_args)
     network = create_network(args.global_args, args.network_args, loss_func)
     network.build()
