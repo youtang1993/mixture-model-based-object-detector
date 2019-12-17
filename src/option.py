@@ -55,7 +55,7 @@ def parse_options():
 
     data_loader_dict = {
         'train': create_data_loader(args.global_args, args.train_data_loader_info),
-        'test': create_data_loader(args.global_args, args.test_data_loader_info, True)}
+        'test': create_data_loader(args.global_args, args.test_data_loader_info)}
 
     tester_dict = dict()
     for tester_info in args.tester_info_list:
@@ -63,10 +63,12 @@ def parse_options():
 
     if (args.load_dir is not None) and os.path.exists(args.load_dir):
         network_path = os.path.join(args.load_dir, 'network.pth')
-        optimizer_path = os.path.join(args.load_dir, 'optimizer.pth')
         network.load(network_path)
-        optimizer.load_state_dict(torch.load(optimizer_path, map_location='cpu'))
-        print('[OPTIMIZER] load: %s' % optimizer_path)
+
+        optimizer_path = os.path.join(args.load_dir, 'optimizer.pth')
+        if os.path.exists(optimizer_path):
+            optimizer.load_state_dict(torch.load(optimizer_path, map_location='cpu'))
+            print('[OPTIMIZER] load: %s' % optimizer_path)
     return args, framework, optimizer, data_loader_dict, tester_dict
 
 
@@ -113,16 +115,13 @@ def create_optimizer(optimizer_args, network):
     return torch.optim.SGD(**optimizer_args)
 
 
-def create_data_loader(global_args, data_loader_info, test=False):
+def create_data_loader(global_args, data_loader_info):
     dataset_key = data_loader_info['dataset']
     dataset_args = data_loader_info['dataset_args']
 
-    if test:
-        batch_size = 1
-        shuffle = False
-    else:
-        batch_size = global_args['batch_size']
-        shuffle = data_loader_info['shuffle']
+    batch_size = data_loader_info['batch_size'] \
+        if 'batch_size' in data_loader_info.keys() else global_args['batch_size']
+    shuffle = data_loader_info['shuffle']
     num_workers = data_loader_info['num_workers']
 
     dataset = get_dataset_dict()[dataset_key](global_args, dataset_args)

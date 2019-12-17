@@ -2,7 +2,7 @@
 
 python3 ./src/run.py \
 --bash_file="./train_mmod_res34_voc.sh" \
---result_dir="./result/`(date "+%Y%m%d%H%M%S")`-voc-320x320-mmod_res34" \
+--result_dir="./result/`(date "+%Y%m%d%H%M%S")`-voc-320x320-mmod_res34fpn" \
 \
 --global_args="{
     'n_classes': 21, 'batch_size': 32,
@@ -47,7 +47,7 @@ python3 ./src/run.py \
             'rgb_mean': [0.485, 0.456, 0.406],
             'rgb_std': [0.229, 0.224, 0.225]}
     },
-    'num_workers': 1
+    'shuffle': False, 'num_workers': 1, 'batch_size': 1
 }" \
 --tester_info_list="[{
     'tester': 'image',

@@ -30,9 +30,6 @@ def main():
         start_time = time.time()
         for train_data_dict in data_loader_dict['train']:
             batch_time = time.time() - start_time
-            if train_data_dict is None:
-                global_step += 1
-                continue
 
             if skip_flag:
                 skip_flag = False
