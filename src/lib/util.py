@@ -190,8 +190,8 @@ def sample_coords_from_mog(mu, sig, pi, n_samples):
 
 def create_coord_map(coord_map_size, coord_range):
     # gauss_w: 4 --> ((0, 1, 2, 3), ...)
-    x_map = np.array(list(range(coord_map_size[1])) * coord_map_size[0])
-    y_map = np.array(list(range(coord_map_size[0])) * coord_map_size[1])
+    x_map = np.array(list(range(coord_map_size[1])) * coord_map_size[0]).astype(np.float32)
+    y_map = np.array(list(range(coord_map_size[0])) * coord_map_size[1]).astype(np.float32)
 
     x_map = x_map.reshape((1, 1, coord_map_size[0], coord_map_size[1]))
     y_map = y_map.reshape((1, 1, coord_map_size[1], coord_map_size[0]))

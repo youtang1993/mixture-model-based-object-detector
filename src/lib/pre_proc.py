@@ -90,6 +90,10 @@ class PreProcBase(PreProcABC):
         return d_dict
 
     def process(self, sample_dict):
+        sample_dict['img'] = np.array(sample_dict['img']).astype(np.float32)
+        sample_dict['boxes'] = np.array(sample_dict['boxes']).astype(np.float32)
+        sample_dict['labels'] = np.array(sample_dict['labels']).astype(np.float32)
+
         s_dict = self.__augment__(sample_dict)
         img_size = np.array(s_dict['img'].shape)[:2]
         s_dict['img'], s_dict['boxes'] = pre_util.resize(s_dict['img'], s_dict['boxes'], self.input_size)
@@ -104,9 +108,9 @@ class PreProcBase(PreProcABC):
 
 class PreProcAugm(PreProcBase):
     def __augment__(self, sample_dict):
-        img = np.array(sample_dict['img']).astype(np.float32)
-        boxes = np.array(sample_dict['boxes']).astype(np.float32)
-        labels = np.array(sample_dict['labels']).astype(np.float32)
+        img = np.array(sample_dict['img'])
+        boxes = np.array(sample_dict['boxes'])
+        labels = np.array(sample_dict['labels'])
 
         img = pre_util.rand_brightness(img)
         img = pre_util.rand_contrast(img)

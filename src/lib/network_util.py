@@ -59,7 +59,7 @@ def create_def_coord(batch_size, output_sizes, coord_range):
 
 
 def create_box_coord_map(output_size, output_ch, coord_range):
-    box_coord_map = np.zeros((output_ch, 4, output_size[0], output_size[1]))
+    box_coord_map = np.zeros((output_ch, 4, output_size[0], output_size[1])).astype(np.float32)
     box_coord_map[:, :2] += lib_util.create_coord_map(output_size, coord_range)
 
     # gauss_ch: 4 --> ((0, 1, 2, 3), ...)

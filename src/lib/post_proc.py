@@ -23,12 +23,12 @@ class MMODPostProc(object):
         for c in range(self.n_classes - 1):
             cls_boxes_sc = boxes_s[c]
             cls_confs_sc = confs_s[c]
-            cls_pi_sc = norm_pi_s.clone()
+            # cls_pi_sc = norm_pi_s.clone()
 
             if len(cls_boxes_sc) == 0:
                 continue
 
-            keep_idxes = torch.nonzero(cls_pi_sc > self.pi_thresh).view(-1)
+            keep_idxes = torch.nonzero(norm_pi_s > self.pi_thresh).view(-1)
             cls_boxes_sc = cls_boxes_sc[keep_idxes]
             cls_confs_sc = cls_confs_sc[keep_idxes]
 
@@ -50,7 +50,7 @@ class MMODPostProc(object):
                 cls_confs_sc = cls_confs_sc[keep_idxes].unsqueeze(dim=1)
 
             labels_css = torch.zeros(cls_confs_sc.shape).float().cuda()
-            labels_css += (c + 1)
+            labels_css += c
 
             cls_boxes_sl.append(cls_boxes_sc)
             cls_confs_sl.append(cls_confs_sc)
@@ -69,6 +69,7 @@ class MMODPostProc(object):
         return boxes_s, confs_s, labels_s
 
     def forward(self, mu, prob, pi):
+        # print('mu', torch.min(mu), torch.max(mu))
         boxes = mu.transpose(1, 2).clone()
         boxes[:, :, [0, 2]] = boxes[:, :, [0, 2]] * (self.input_size[1] / self.coord_range[1])
         boxes[:, :, [1, 3]] = boxes[:, :, [1, 3]] * (self.input_size[0] / self.coord_range[0])
@@ -81,5 +82,5 @@ class MMODPostProc(object):
             boxes_s, confs_s, labels_s = self.__filter_cls_boxes_s__(boxes_s, confs_s, pi[i, 0])
             boxes_l.append(boxes_s[:self.max_boxes])
             confs_l.append(confs_s[:self.max_boxes])
-            labels_l.append(labels_s[:self.max_boxes])
+            labels_l.append(labels_s[:self.max_boxes] + 1)
         return boxes_l, confs_l, labels_l
