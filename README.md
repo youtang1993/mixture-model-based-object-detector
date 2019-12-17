@@ -1,7 +1,8 @@
 Mixture-Model-based Object Detector: PyTorch Implementation
 ===========================================================
 
-This repository is the PyTorch implementation of "[Mixture-Model-based Bounding Box Density Estimation for Object Detection](https://arxiv.org/abs/1911.12721)"
+This repository is the PyTorch implementation of  
+"[Mixture-Model-based Bounding Box Density Estimation for Object Detection](https://arxiv.org/abs/1911.12721)"
 
 Enviroment
 ----------

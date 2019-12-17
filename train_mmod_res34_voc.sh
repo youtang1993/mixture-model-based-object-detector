@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-BASH_FILE="./train_mmod_res34_voc.sh"
-RESULT_DIR="./result/voc/`(date "+%Y%m%d%H%M%S")`-320x320-mmod_res34"
-#LOAD_DIR="./result/voc/20191216203123-320x320-mmod_res34/snapshot/0100000"
-
 python3 ./src/run.py \
---bash_file=$BASH_FILE \
---result_dir=$RESULT_DIR \
+--bash_file="./train_mmod_res34_voc.sh" \
+--result_dir="./result/`(date "+%Y%m%d%H%M%S")`-voc-320x320-mmod_res34" \
 \
 --global_args="{
     'n_classes': 21, 'batch_size': 32,
@@ -74,4 +70,4 @@ python3 ./src/run.py \
 --test_iters="[40000, 70000, 90000, 95000, 100000]" \
 --snapshot_iters="[40000, 70000, 100000]" \
 \
-#--load_dir=$LOAD_DIR
+#--load_dir=""

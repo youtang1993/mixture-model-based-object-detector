@@ -1,15 +1,8 @@
-/data/*
-/result/*
-/model/*
-/old-workspace/
-/model/pretrained_model/*
+# /data/*
+# /result/*
 __pycache__/
 build/
-detection.egg-info/
 .temp/*
 .idea/
-
 .fuse*
 *.so
-
-
