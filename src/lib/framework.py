@@ -51,13 +51,13 @@ class MMODFramework(FrameworkABC):
                 boxes = data_dict['boxes'].cuda()
                 labels = data_dict['labels'].long().cuda()
                 n_boxes = data_dict['n_boxes'].long().cuda()
-                mog_nll_loss, mod_nll_loss = \
-                    self.network.forward(image, boxes, labels, n_boxes, loss=True)
+                mog_nll_loss, mod_nll_loss = self.network.forward(image, boxes, labels, n_boxes, loss=True)
 
                 sum_n_boxes = torch.sum(n_boxes)
                 mog_nll_loss = torch.sum(mog_nll_loss) / sum_n_boxes
                 mod_nll_loss = torch.sum(mod_nll_loss) / (sum_n_boxes * self.network.loss_func.n_samples)
-                return {'mog_nll': mog_nll_loss, 'mod_nll': mod_nll_loss}
+                # return {'mog_nll': mog_nll_loss, 'mod_nll': mod_nll_loss}
+                return {'mog_nll': mog_nll_loss, 'sample_comb_nll': mod_nll_loss}
 
             else:
                 s_t = time.time()

@@ -44,7 +44,7 @@ def clip_boxes(boxes, size):
 def clip_boxes_s(boxes_s, size, numpy=False):
     if numpy:
         boxes_s[:, [0, 2]] = np.clip(boxes_s[:, [0, 2]], a_min=0, a_max=size[1] - 1)
-        boxes_s[:, [1, 3]] = np.clip(boxes_s[:, [1, 3]], a_min=1, a_max=size[0] - 1)
+        boxes_s[:, [1, 3]] = np.clip(boxes_s[:, [1, 3]], a_min=0, a_max=size[0] - 1)
     else:
         boxes_s[:, [0, 2]] = torch.clamp(boxes_s[:, [0, 2]], min=0, max=size[1] - 1)
         boxes_s[:, [1, 3]] = torch.clamp(boxes_s[:, [1, 3]], min=0, max=size[0] - 1)

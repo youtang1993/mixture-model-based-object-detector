@@ -4,6 +4,7 @@ from . import util as lib_util
 
 def calc_mog_nll(mu, sig, pi, boxes, n_boxes):
     mog_nll_loss = list()
+    # mog_nll_loss = torch.zeros(1).cuda()
     for i in range(mu.shape[0]):
         if n_boxes[i] <= 0:
             mog_nll_loss.append(torch.zeros(1).cuda())
@@ -14,8 +15,8 @@ def calc_mog_nll(mu, sig, pi, boxes, n_boxes):
             mixture_lhs_s = lib_util.mog_pdf(mu_s, sig_s, pi_s, boxes_s, sum_gauss=True)
             mixture_lhs_s *= n_boxes[i]
             mixture_nll_s = -torch.log(mixture_lhs_s + lib_util.epsilon)
-            mog_nll_loss.append(torch.sum(mixture_nll_s))
-    mog_nll_loss = torch.stack(mog_nll_loss, dim=0)
+            mog_nll_loss.append(mixture_nll_s.squeeze(dim=0).squeeze(dim=1))
+    mog_nll_loss = torch.cat(mog_nll_loss, dim=0)
     return mog_nll_loss
 
 
@@ -26,9 +27,8 @@ def calc_mod_mm_nll(mu, sig, pi, clsprob, boxes, labels, n_boxes, n_samples, n_c
     labels = lib_util.cvt_int2onehot(labels, n_classes)
     sample_boxes = lib_util.sample_coords_from_mog(mu, sig, pi, int(torch.max(n_boxes) * n_samples))
 
-    batch_size = mu.shape[0]
     mod_mm_nll_loss = list()
-    for i in range(batch_size):
+    for i in range(mu.shape[0]):
         mu_s, sig_s = mu[i:i + 1], sig[i:i + 1]
         pi_s, clsprob_s = pi[i:i + 1], clsprob[i:i + 1]
         boxes_s = boxes[i:i + 1, :n_boxes[i]]
@@ -44,9 +44,6 @@ def calc_mod_mm_nll(mu, sig, pi, clsprob, boxes, labels, n_boxes, n_samples, n_c
             sample_labels_s = torch.where(
                 max_ious.unsqueeze(dim=1) > 0.5, sample_labels_s,
                 bg_labels_s[:n_boxes[i] * n_samples])
-
-        # samples_s = samples[i, :n_boxes[i] * n_samples]
-        # samples_s = samples_s.unsqueeze(dim=0)
         sample_labels_s = sample_labels_s.unsqueeze(dim=0)
 
         # gauss_lhs_s = util.calc_mog_likelihood(mu_s, sig_s, pi_s, samples_s, sum_gauss=False)
@@ -56,8 +53,6 @@ def calc_mod_mm_nll(mu, sig, pi, clsprob, boxes, labels, n_boxes, n_samples, n_c
 
         mm_lhs_s = torch.sum(gauss_lhs_s * cat_probs_s, dim=3)
         mm_nll_s = -torch.log(mm_lhs_s + lib_util.epsilon)
-        # combined_nll_loss += torch.sum(combined_nll_s)
-        mod_mm_nll_loss.append(torch.sum(mm_nll_s))
-
-    mod_mm_nll_loss = torch.stack(mod_mm_nll_loss, dim=0)
+        mod_mm_nll_loss.append(mm_nll_s.squeeze(dim=0).squeeze(dim=1))
+    mod_mm_nll_loss = torch.cat(mod_mm_nll_loss, dim=0)
     return mod_mm_nll_loss

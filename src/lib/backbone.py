@@ -1,7 +1,7 @@
 import abc
 import torch.nn as nn
 import torchvision
-from .network_util import init_modules_xavier
+from . import network_util as net_util
 
 
 def get_backbone_dict():
@@ -66,10 +66,10 @@ class ResNet34FPN(BackboneABC):
         if self.pretrained:
             print('[BACKBONE] load image-net pre-trained model')
         else:
-            init_modules_xavier(
+            net_util.init_modules_xavier(
                 [self.net['base'], self.net['stage_c3'],
                  self.net['stage_c4'], self.net['stage_c5']])
-        init_modules_xavier(
+        net_util.init_modules_xavier(
             [self.net['stage_c6'], self.net['stage_c7'],
              self.net['stage_p5_1'], self.net['stage_p5_2'],
              self.net['stage_p4_1'], self.net['stage_p4_2'],
@@ -103,7 +103,7 @@ class ResNet34FPN(BackboneABC):
 
 class ResNet50FPN(ResNet34FPN):
     def __init__(self, network_args):
-        super(ResNet34FPN, self).__init__(network_args)
+        super(ResNet50FPN, self).__init__(network_args)
         self.inter_chs = (512, 1024, 2048)
 
     def __get_base_network__(self):

@@ -63,6 +63,7 @@ class MMODNetwork(NetworkABC):
             nn.Conv2d(self.fmap_ch, self.fmap_ch, 1, 1, 0, bias=True),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(self.fmap_ch, out_ch, 1, 1, 0, bias=True))
+        net_util.init_modules_xavier(self.net['detector'])
 
         output_sizes = list()
         for fmap2img_ratio in backbone.get_fmap2img_ratios():

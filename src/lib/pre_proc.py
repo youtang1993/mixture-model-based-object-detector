@@ -73,7 +73,7 @@ class PreProcBase(PreProcABC):
 
     def transform(self, sample_dict):
         s_dict = sample_dict
-        s_dict['img'] = np.transpose(s_dict['img'], axes=(2, 0, 1)).astype(dtype=np.float) / 255.0
+        s_dict['img'] = np.transpose(s_dict['img'], axes=(2, 0, 1)).astype(dtype=np.float32) / 255.0
         s_dict['img'] = (s_dict['img'] - self.rgb_mean) / self.rgb_std
         s_dict['boxes'][:, [0, 2]] *= (self.coord_range[1] / self.input_size[1])
         s_dict['boxes'][:, [1, 3]] *= (self.coord_range[0] / self.input_size[0])
