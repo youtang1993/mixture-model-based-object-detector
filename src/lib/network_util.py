@@ -10,6 +10,7 @@ def init_modules_xavier(module_list):
                 isinstance(m, nn.ConvTranspose2d) or \
                 isinstance(m, nn.BatchNorm2d):
             if m.weight is not None:
+                # print('init')
                 nn.init.xavier_uniform_(m.weight)
             if m.bias is not None:
                 m.bias.data.zero_()
@@ -75,8 +76,10 @@ def create_box_coord_map(output_size, output_ch, coord_range):
 
     # ((20, 40, 60, 80) / 100)^2 == (0.04, 0.16, 0.36, 0.64)
     # (0.04, 0.16, 0.36, 0.64) * 100 == (4, 16, 36, 64)
-    w_map = ((w_map / coord_range[1]) ** 2) * coord_range[1]
-    h_map = ((h_map / coord_range[0]) ** 2) * coord_range[0]
+    # w_map = ((w_map / coord_range[1]) ** 2) * coord_range[1]
+    # h_map = ((h_map / coord_range[0]) ** 2) * coord_range[0]
+    w_map = (w_map / coord_range[1]) * coord_range[1]
+    h_map = (h_map / coord_range[0]) * coord_range[0]
 
     w_map = w_map.reshape((output_ch, 1, 1))
     h_map = h_map.reshape((output_ch, 1, 1))

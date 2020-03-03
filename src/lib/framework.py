@@ -10,6 +10,17 @@ class FrameworkABC(abc.ABC):
         self.global_args = global_args
         self.post_proc = post_proc
         self.network = network
+        self.n_samples = self.network.loss_func.n_samples
+
+        devices = global_args['devices']
+        self.main_device = global_args['main_device']
+
+        if len(devices) > 1:
+            network = convert_model(network)
+            self.network = nn.DataParallel(
+                network, device_ids=devices, output_device=self.main_device)
+            patch_replication_callback(self.network)
+        self.network.cuda(self.main_device)
 
     def train_forward(self, data_dict):
         loss_dict = self.forward(data_dict, train=True, grad_enable=True)
@@ -29,18 +40,6 @@ class FrameworkABC(abc.ABC):
 
 
 class MMODFramework(FrameworkABC):
-    def __init__(self, global_args, network, post_proc):
-        super(MMODFramework, self).__init__(global_args, network, post_proc)
-        devices = global_args['devices']
-        self.main_device = global_args['main_device']
-
-        if len(devices) > 1:
-            network = convert_model(network)
-            self.network = nn.DataParallel(
-                network, device_ids=devices, output_device=self.main_device)
-            patch_replication_callback(self.network)
-        self.network.cuda(self.main_device)
-
     def forward(self, data_dict, train=True, grad_enable=True):
         self.network.train(train)
         torch.autograd.set_grad_enabled(grad_enable)
@@ -54,9 +53,8 @@ class MMODFramework(FrameworkABC):
                 mog_nll_loss, mod_nll_loss = self.network.forward(image, boxes, labels, n_boxes, loss=True)
 
                 sum_n_boxes = torch.sum(n_boxes)
-                mog_nll_loss = torch.sum(mog_nll_loss) / sum_n_boxes
-                mod_nll_loss = torch.sum(mod_nll_loss) / (sum_n_boxes * self.network.loss_func.n_samples)
-                # return {'mog_nll': mog_nll_loss, 'mod_nll': mod_nll_loss}
+                mog_nll_loss = torch.sum(mog_nll_loss, dim=0) / sum_n_boxes
+                mod_nll_loss = torch.sum(mod_nll_loss, dim=0) / (sum_n_boxes * self.n_samples)
                 return {'mog_nll': mog_nll_loss, 'sample_comb_nll': mod_nll_loss}
 
             else:

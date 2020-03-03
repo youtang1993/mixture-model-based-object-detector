@@ -1,7 +1,9 @@
 import os
 import abc
+import traceback
 import numpy as np
 import scipy.misc
+from shutil import copyfile
 from xml.etree import ElementTree
 from torch.utils.data.dataset import Dataset
 from .pre_proc import get_pre_proc_dict
@@ -11,6 +13,7 @@ from lib.external.dataset.roidb import combined_roidb
 def get_dataset_dict():
     return {
         'voc': VOCDataset,
+        'coco': COCODataset,
     }
 
 
@@ -80,6 +83,21 @@ class VOCDataset(DatasetABC):
         boxes, labels = self.__parse_anno__(anno)
 
         sample_dict = {'img': img, 'boxes': boxes, 'labels': labels}
+        try:
+            sample_dict = self.pre_proc.process(sample_dict)
+        except Exception:
+            print(traceback.print_exc())
+            print('- %s\n' % self.img_pathes[data_idx])
+            copyfile( self.img_pathes[data_idx].replace('coco2017', 'coco2017-2'), self.img_pathes[data_idx])
+            sample_dict = self.__getitem__(data_idx)
+        return sample_dict
+
+    def __getitem_tmp__(self, data_idx):
+        img = scipy.misc.imread(self.img_pathes[data_idx])
+        anno = ElementTree.parse(self.anno_pathes[data_idx]).getroot()
+        boxes, labels = self.__parse_anno__(anno)
+
+        sample_dict = {'img': img, 'boxes': boxes, 'labels': labels}
         sample_dict = self.pre_proc.process(sample_dict)
         return sample_dict
 
@@ -110,7 +128,10 @@ class COCODataset(DatasetABC):
     def __init__(self, global_args, dataset_args):
         super(COCODataset, self).__init__(global_args, dataset_args)
 
-        imdb_names = "coco_2017_" + type.replace('_', '-')
+        imdb_names = "coco_2017_" + dataset_args['types'][0]
+        # imdb_names = "coco_2017_" + type.replace('_', '-')
+        # print(imdb_names, self.roots[0])
+        # exit()
         self.roidb = combined_roidb(imdb_names, self.roots[0])
         self.data_size = len(self.roidb)
 
@@ -151,16 +172,22 @@ class COCODataset(DatasetABC):
             'teddy bear': 78, 'hair drier': 79, 'toothbrush': 80}
 
     def __getitem__(self, index):
-        minibatch_db = self.roidb[index]
-        img = scipy.misc.imread(minibatch_db['image'])
+        try:
+            minibatch_db = self.roidb[index]
+            img = scipy.misc.imread(minibatch_db['image'])
 
-        if len(img.shape) == 2:
-            img = np.repeat(np.expand_dims(img, axis=2), 3, axis=2)
-        boxes = minibatch_db['boxes']
-        labels = minibatch_db['gt_classes']
+            if len(img.shape) == 2:
+                img = np.repeat(np.expand_dims(img, axis=2), 3, axis=2)
+            boxes = minibatch_db['boxes']
+            labels = minibatch_db['gt_classes']
 
-        sample_dict = {'img': img, 'boxes': boxes, 'labels': labels}
-        sample_dict = self.pre_proc.process(sample_dict)
+            sample_dict = {'img': img, 'boxes': boxes, 'labels': labels}
+            sample_dict = self.pre_proc.process(sample_dict)
+        except Exception:
+            print(traceback.print_exc())
+            print('- %s\n' % minibatch_db['image'])
+            copyfile(minibatch_db['image'].replace('coco2017', 'coco2017-2'), minibatch_db['image'])
+            sample_dict = self.__getitem__(index)
         return sample_dict
 
     def __len__(self):
@@ -172,6 +199,6 @@ class COCODataset(DatasetABC):
     def get_name2number_map(self):
         return self.name2number_map
 
-    def get_dataset_root(self):
-        return self.root
+    def get_dataset_roots(self):
+        return self.roots
 

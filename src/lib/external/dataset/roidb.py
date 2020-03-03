@@ -90,17 +90,18 @@ def combined_roidb(imdb_names, data_path=None):
 
     def get_training_roidb(imdb):
         """Returns a roidb (Region of Interest database) for use in training."""
-        print('Preparing training data...')
+        # print('Preparing training data...')
+        # print(imdb)
         prepare_roidb(imdb)
         # ratio_index = rank_roidb_ratio(imdb)
-        print('done')
+        # print('done')
         return imdb.roidb
 
     def get_roidb(imdb_name):
         imdb = get_imdb(imdb_name, data_path)
         print('Loaded dataset `{:s}` for training'.format(imdb.name))
         imdb.set_proposal_method('gt')
-        print('Set proposal method: {:s}'.format('gt'))
+        # print('Set proposal method: {:s}'.format('gt'))
         # imdb.set_proposal_method(cfg.TRAIN.PROPOSAL_METHOD)
         # print('Set proposal method: {:s}'.format(cfg.TRAIN.PROPOSAL_METHOD))
         roidb = get_training_roidb(imdb)

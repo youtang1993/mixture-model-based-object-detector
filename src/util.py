@@ -76,3 +76,23 @@ def update_network(network, optimizer, loss_dict, max_grad=None):
     if max_grad is not None:
         nn.utils.clip_grad_norm_(network.parameters(), max_grad)
     optimizer.step()
+
+'''
+    def update_networks(optimizer, loss_dict, net_dict, max_gradient=None):
+        # global iter_num
+        sum_loss = 0
+        for _, loss in loss_dict.items():
+            sum_loss += loss
+        optimizer.zero_grad()
+        sum_loss.backward()
+        if max_gradient is not None:
+            # max_grad, mean_grad = 0, 0
+            for _, net in net_dict.items():
+                # for param in net.parameters():
+                # max_grad = torch.max(torch.norm(param.grad))
+                # mean_grad = torch.mean(torch.norm(param.grad))
+                # print(iter_num, max_gradient, max_grad, mean_grad)
+                nn.utils.clip_grad_norm_(net.parameters(), max_gradient)
+            # iter_num += 1
+        optimizer.step()
+'''

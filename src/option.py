@@ -114,6 +114,8 @@ def create_framework(global_args, network, post_proc):
 
 def create_optimizer(optimizer_args, network):
     optimizer_args.update({'params': network.parameters()})
+    # print(optimizer_args)
+    # exit()
     return torch.optim.SGD(**optimizer_args)
 
 

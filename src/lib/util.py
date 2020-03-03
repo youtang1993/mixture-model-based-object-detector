@@ -136,7 +136,6 @@ def calc_jaccard_numpy(boxes_a, box_b):
 
 def gaussian_pdf(x, mu, sig):
     # make |mu|=K copies of y, subtract mu, divide by sigma
-    # print(x.shape, mu.shape, sig.shape)
     result = (x - mu) / sig
     result = -0.5 * (result * result)
     result = torch.exp(result) / (sig * math.sqrt(2.0 * math.pi))

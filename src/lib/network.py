@@ -34,7 +34,6 @@ class NetworkABC(abc.ABC, nn.Module):
 class MMODNetwork(NetworkABC):
     def __init__(self, global_args, network_args, loss_func):
         super(MMODNetwork, self).__init__(global_args, network_args, loss_func)
-
         self.coord_range = (global_args['coord_h'], global_args['coord_w'])
         self.img_size = (global_args['img_h'], global_args['img_w'])
         self.main_device = global_args['main_device']
@@ -82,7 +81,7 @@ class MMODNetwork(NetworkABC):
         self.limit_scale = self.limit_scale.cuda(self.main_device)
 
     def __sycn_batch_and_device__(self, batch_size, device_idx):
-        if self.main_device != device_idx:
+        if self.def_coord.device.index != device_idx:
             xy_maps = [xy_map[:batch_size].cuda(device_idx) for xy_map in self.xy_maps]
             def_coord = self.def_coord[:batch_size].cuda(device_idx)
             limit_scale = self.limit_scale[:batch_size].cuda(device_idx)

@@ -28,12 +28,12 @@ class imdb(object):
             self._classes = []
         else:
             self._classes = classes
-            self._image_index = []
-            self._obj_proposer = 'gt'
-            self._roidb = None
-            self._roidb_handler = self.default_roidb
-            # Use this dict for storing dataset specific config options
-            self.config = {}
+        self._image_index = []
+        self._obj_proposer = 'gt'
+        self._roidb = None
+        self._roidb_handler = self.default_roidb
+        # Use this dict for storing dataset specific config options
+        self.config = {}
 
     @property
     def name(self):

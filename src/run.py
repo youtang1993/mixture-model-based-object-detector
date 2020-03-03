@@ -1,6 +1,7 @@
 import os
 import time
 import torch
+import traceback
 from tensorboardX import SummaryWriter
 import option
 import util
@@ -88,6 +89,7 @@ def train_network_one_step(args, framework, optimizer, train_data_dict, global_s
 
     except Exception as e:
         print('[WARNING] %d/%d:' % (global_step, args.training_args['max_iter']))
+        print(traceback.print_exc())
         print('- %s\n- skip this mini-batch\n' % (str(e)))
 
         if 'memory' in str(e):

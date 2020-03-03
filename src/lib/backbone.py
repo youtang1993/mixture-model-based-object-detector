@@ -76,12 +76,7 @@ class ResNet34FPN(BackboneABC):
              self.net['stage_p3_1'], self.net['stage_p3_2']])
 
     def forward(self, image):
-        # import torch
-        # print('image_r', torch.min(image[0, 0]), torch.mean(image[0, 0]), torch.max(image[0, 0]))
-        # print('image_g', torch.min(image[0, 1]), torch.mean(image[0, 1]), torch.max(image[0, 1]))
-        # print('image_b', torch.min(image[0, 2]), torch.mean(image[0, 2]), torch.max(image[0, 2]))
         base_fmap = self.net['base'].forward(image)
-        # print('base_fmap', torch.min(base_fmap), torch.max(base_fmap))
         fmap_c3 = self.net['stage_c3'].forward(base_fmap)
         fmap_c4 = self.net['stage_c4'].forward(fmap_c3)
         fmap_c5 = self.net['stage_c5'].forward(fmap_c4)

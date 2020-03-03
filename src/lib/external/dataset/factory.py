@@ -87,6 +87,7 @@ __sets['voc'] = pascal_voc
 
 def get_imdb(name, data_path=None):
     dataset, year, split = name.split('_')
+    # print(dataset, year, split, data_path)
     return __sets[dataset](split, year, data_path)
 
 

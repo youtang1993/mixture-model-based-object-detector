@@ -28,15 +28,19 @@ class MMODPostProc(object):
             if len(cls_boxes_sc) == 0:
                 continue
 
+            # print(cls_boxes_sc.shape)
             keep_idxes = torch.nonzero(norm_pi_s > self.pi_thresh).view(-1)
             cls_boxes_sc = cls_boxes_sc[keep_idxes]
             cls_confs_sc = cls_confs_sc[keep_idxes]
 
+            # print(cls_boxes_sc.shape)
             keep_idxes = torch.nonzero(cls_confs_sc > self.conf_thresh).view(-1)
             cls_boxes_sc = cls_boxes_sc[keep_idxes]
             cls_confs_sc = cls_confs_sc[keep_idxes]
             if keep_idxes.shape[0] == 0:
                 continue
+            # print(cls_boxes_sc.shape)
+            # print('')
 
             if self.nms_thresh <= 0.0:
                 cls_boxes_sc, cls_confs_sc = lib_util.sort_boxes_s(cls_boxes_sc, cls_confs_sc)
@@ -55,6 +59,7 @@ class MMODPostProc(object):
             cls_boxes_sl.append(cls_boxes_sc)
             cls_confs_sl.append(cls_confs_sc)
             cls_labels_sl.append(labels_css)
+        # exit()
 
         if len(cls_boxes_sl) > 0:
             boxes_s = torch.cat(cls_boxes_sl, dim=0)
