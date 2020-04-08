@@ -12,7 +12,6 @@ class MMODPostProc(object):
         self.pi_thresh = post_proc_args['pi_thresh']
         self.conf_thresh = post_proc_args['conf_thresh']
         self.nms_thresh = post_proc_args['nms_thresh']
-        self.max_boxes = post_proc_args['max_boxes']
 
     def __filter_cls_boxes_s__(self, boxes_s, confs_s, pi_s):
         boxes_sl = list()

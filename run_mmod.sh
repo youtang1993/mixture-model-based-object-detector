@@ -19,8 +19,7 @@ python3 ./src/run.py \
     'n_samples': 5
 }" \
 --post_proc_args="{
-    'pi_thresh': 0.001, 'conf_thresh': 0.001,
-    'nms_thresh': 0.5, 'max_boxes': 1000
+    'pi_thresh': 0.001, 'conf_thresh': 0.001, 'nms_thresh': 0.5,
 }" \
 --optimizer_args="{
     'lr': 0.005, 'momentum': 0.9, 'weight_decay': 0.00005
