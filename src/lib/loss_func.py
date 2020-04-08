@@ -19,14 +19,14 @@ class MMODLossFunction(LossFunctionABC):
         self.n_samples = loss_func_args['n_samples']
         self.n_classes = global_args['n_classes']
         assert 'mog_nll' in self.lw_dict.keys()
-        assert 'mod_nll' in self.lw_dict.keys()
+        assert 'mm_nll' in self.lw_dict.keys()
 
     def forward(self, mu, sig, prob, pi, boxes, labels, n_boxes):
         mog_nll_loss = loss_util.calc_mog_nll(mu, sig, pi, boxes, n_boxes)
-        mod_nll_loss = loss_util.calc_mod_mm_nll(
+        mm_nll_loss = loss_util.calc_mm_nll(
             mu.detach(), sig.detach(), pi.detach(), prob,
             boxes, labels, n_boxes, self.n_samples, self.n_classes)
 
         mog_nll_loss = self.lw_dict['mog_nll'] * mog_nll_loss
-        mod_nll_loss = self.lw_dict['mod_nll'] * mod_nll_loss
-        return mog_nll_loss, mod_nll_loss
+        mm_nll_loss = self.lw_dict['mm_nll'] * mm_nll_loss
+        return mog_nll_loss, mm_nll_loss

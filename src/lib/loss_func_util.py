@@ -22,9 +22,6 @@ def __calc_xywh_nll__(mu, sig, pi, boxes, n_boxes):
 
 
 def calc_mog_nll(mu, sig, pi, boxes, n_boxes):
-    # print(torch.min(mu), torch.mean(mu), torch.max(mu))
-    # print(torch.min(sig), torch.mean(sig), torch.max(sig))
-    # print(torch.min(pi), torch.mean(pi), torch.max(pi))
     mog_nll_loss = torch.zeros(1).cuda()
     for i in range(mu.shape[0]):
         if n_boxes[i] <= 0:
@@ -36,26 +33,16 @@ def calc_mog_nll(mu, sig, pi, boxes, n_boxes):
             mixture_lhs_s = lib_util.mog_pdf(mu_s, sig_s, pi_s, boxes_s, sum_gauss=True)
             mixture_lhs_s *= n_boxes[i]
             mixture_nll_s = -torch.log(mixture_lhs_s + lib_util.epsilon)
-
-            # print(torch.min(mixture_nll_s), torch.mean(mixture_nll_s), torch.max(mixture_nll_s))
             mog_nll_loss += torch.sum(mixture_nll_s)
-
     return mog_nll_loss
 
 
-def calc_mod_mm_nll(mu, sig, pi, clsprob, boxes, labels, n_boxes, n_samples, n_classes):
+def calc_mm_nll(mu, sig, pi, clsprob, boxes, labels, n_boxes, n_samples, n_classes):
     bg_labels_s = torch.zeros((torch.max(n_boxes) * n_samples, n_classes)).float().cuda()
     bg_labels_s[:, 0] = 1.0
 
     labels = lib_util.cvt_int2onehot(labels, n_classes)
     sample_boxes = lib_util.sample_coords_from_mog(mu, sig, pi, int(torch.max(n_boxes) * n_samples))
-
-    # sample_boxes = list()
-    # sample_boxes.append(torch.ones((32, int(torch.max(n_boxes) * n_samples), 1)).float().cuda() * 2)
-    # sample_boxes.append(torch.ones((32, int(torch.max(n_boxes) * n_samples), 1)).float().cuda() * 3)
-    # sample_boxes.append(torch.ones((32, int(torch.max(n_boxes) * n_samples), 1)).float().cuda() * 4)
-    # sample_boxes.append(torch.ones((32, int(torch.max(n_boxes) * n_samples), 1)).float().cuda() * 5)
-    # sample_boxes = torch.cat(sample_boxes, dim=2)
 
     mod_mm_nll_loss = torch.zeros(1).cuda()
     for i in range(mu.shape[0]):

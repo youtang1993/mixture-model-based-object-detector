@@ -43,13 +43,14 @@ class MMODNetwork(NetworkABC):
         self.xy_limit_factor = network_args['xy_limit_factor']
         self.std_factor = network_args['std_factor']
         self.fmap_ch = network_args['fmap_ch']
+        self.out_split_idxes = [4, 4, self.n_classes, 1]
+        self.out_ch = sum(self.out_split_idxes)
 
         self.xy_maps = None
         self.def_coord = None
         self.limit_scale = None
 
     def build(self):
-        out_ch = 1 + 4 + 4 + self.n_classes
         backbone = get_backbone_dict()[self.network_args['backbone']](self.network_args)
         backbone.build()
 
@@ -61,7 +62,7 @@ class MMODNetwork(NetworkABC):
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(self.fmap_ch, self.fmap_ch, 1, 1, 0, bias=True),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(self.fmap_ch, out_ch, 1, 1, 0, bias=True))
+            nn.Conv2d(self.fmap_ch, self.out_ch, 1, 1, 0, bias=True))
         net_util.init_modules_xavier(self.net['detector'])
 
         output_sizes = list()
@@ -97,18 +98,13 @@ class MMODNetwork(NetworkABC):
             self.__sycn_batch_and_device__(batch_size, image.device.index)
 
         fmaps = self.net['backbone'].forward(image)
-        o1, o2, o3, o4 = list(), list(), list(), list()
+        out_tensors = list()
         for i, fmap in enumerate(fmaps):
             fmap = torch.cat([fmap, xy_maps[i]], dim=1)
-            out_params = self.net['detector'].forward(fmap)
-
-            o1.append(out_params[:, 0:4].view((batch_size, 4, -1)))
-            o2.append(out_params[:, 4:8].view((batch_size, 4, -1)))
-            o3.append(out_params[:, 9:].view(batch_size, self.n_classes, -1))
-            o4.append(out_params[:, 8:9].view((batch_size, 1, -1)))
-
-        o1, o2 = torch.cat(o1, dim=2), torch.cat(o2, dim=2)
-        o3, o4 = torch.cat(o3, dim=2), torch.cat(o4, dim=2)
+            out_tensor = self.net['detector'].forward(fmap).view(batch_size, self.out_ch, -1)
+            out_tensors.append(out_tensor)
+        out_tensor = torch.cat(out_tensors, dim=2)
+        o1, o2, o3, o4 = torch.split(out_tensor, self.out_split_idxes, dim=1)
 
         _o1 = net_util.__limit_xy__(o1, xy_limit_scale) + def_coord
         _o1_wh = _o1[:, 2:].clone().detach()
@@ -122,6 +118,6 @@ class MMODNetwork(NetworkABC):
         if (loss is False) or (boxes is None) or (labels is None) or (n_boxes is None):
             return mu, sig, prob, pi
         else:
-            mog_nll_loss, sample_comb_nll_loss = \
+            mog_nll_loss, mm_nll_loss = \
                 self.loss_func.forward(mu, sig, prob, pi, boxes, labels, n_boxes)
-            return mog_nll_loss, sample_comb_nll_loss
+            return mog_nll_loss, mm_nll_loss

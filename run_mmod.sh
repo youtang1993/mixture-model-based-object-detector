@@ -15,8 +15,7 @@ python3 ./src/run.py \
     'xy_limit_factor': 1.0, 'std_factor': 0.1
 }" \
 --loss_func_args="{
-    'lw_dict': {'mog_nll': 1.0, 'mod_nll': 2.0},
-    'n_samples': 5
+    'lw_dict': {'mog_nll': 1.0, 'mm_nll': 2.0}, 'n_samples': 5
 }" \
 --post_proc_args="{
     'pi_thresh': 0.001, 'conf_thresh': 0.001, 'nms_thresh': 0.5,
