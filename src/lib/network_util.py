@@ -10,7 +10,6 @@ def init_modules_xavier(module_list):
                 isinstance(m, nn.ConvTranspose2d) or \
                 isinstance(m, nn.BatchNorm2d):
             if m.weight is not None:
-                # print('init')
                 nn.init.xavier_uniform_(m.weight)
             if m.bias is not None:
                 m.bias.data.zero_()
@@ -66,20 +65,18 @@ def create_box_coord_map(output_size, output_ch, coord_range):
     # gauss_ch: 4 --> ((0, 1, 2, 3), ...)
     ch_map = np.array(list(range(output_ch)))
 
-    # coord_w: 100 --> unit_intv_w: 20 = 100 / (4 + 1)
+    # coord_w: 10 --> unit_intv_w: 2 = 10 / (4 + 1)
     unit_intv_w = coord_range[1] / (output_ch + 1.0)
     unit_intv_h = coord_range[0] / (output_ch + 1.0)
 
-    # ((0, 1, 2, 3) + 1) * 20 == (20, 40, 60, 80)
+    # ((0, 1, 2, 3) + 1) * 2 == (2, 4, 6, 8)
     w_map = (ch_map + 1) * unit_intv_w
     h_map = (ch_map + 1) * unit_intv_h
 
-    # ((20, 40, 60, 80) / 100)^2 == (0.04, 0.16, 0.36, 0.64)
-    # (0.04, 0.16, 0.36, 0.64) * 100 == (4, 16, 36, 64)
-    # w_map = ((w_map / coord_range[1]) ** 2) * coord_range[1]
-    # h_map = ((h_map / coord_range[0]) ** 2) * coord_range[0]
-    w_map = (w_map / coord_range[1]) * coord_range[1]
-    h_map = (h_map / coord_range[0]) * coord_range[0]
+    # ((2, 4, 6, 8) / 10)^2 == (0.04, 0.16, 0.36, 0.64)
+    # (0.04, 0.16, 0.36, 0.64) * 10 == (0.4, 1.6, 3.6, 6.4)
+    w_map = ((w_map / coord_range[1]) ** 2) * coord_range[1]
+    h_map = ((h_map / coord_range[0]) ** 2) * coord_range[0]
 
     w_map = w_map.reshape((output_ch, 1, 1))
     h_map = h_map.reshape((output_ch, 1, 1))
@@ -93,10 +90,7 @@ def create_box_coord_map(output_size, output_ch, coord_range):
 
 
 def create_limit_scale(batch_size, output_sizes, coord_range, limit_factor):
-    # n_lv_mix_comps = [output_size[0] * output_size[1] for output_size in output_sizes]
-
     lv_x_limit_scales, lv_y_limit_scales = list(), list()
-    # for i, n_lv_mix_comp in enumerate(n_lv_mix_comps):
     for output_size in output_sizes:
         x_limit_scale = (coord_range[1] / output_size[1]) * limit_factor
         y_limit_scale = (coord_range[0] / output_size[0]) * limit_factor

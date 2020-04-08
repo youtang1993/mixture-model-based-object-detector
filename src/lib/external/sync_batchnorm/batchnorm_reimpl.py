@@ -71,4 +71,3 @@ class BatchNorm2dReimpl(nn.Module):
                 self.weight.unsqueeze(1) + self.bias.unsqueeze(1))
 
         return output.view(channels, batchsize, height, width).permute(1, 0, 2, 3).contiguous()
-

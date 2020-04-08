@@ -15,66 +15,57 @@ class MMODPostProc(object):
         self.max_boxes = post_proc_args['max_boxes']
 
     def __filter_cls_boxes_s__(self, boxes_s, confs_s, pi_s):
-        cls_boxes_sl = list()
-        cls_confs_sl = list()
-        cls_labels_sl = list()
+        boxes_sl = list()
+        confs_sl = list()
+        labels_sl = list()
 
         norm_pi_s = pi_s / torch.max(pi_s)
-        for c in range(self.n_classes - 1):
-            cls_boxes_sc = boxes_s[c]
-            cls_confs_sc = confs_s[c]
-            # cls_pi_sc = norm_pi_s.clone()
+        keep_idxes = torch.nonzero(norm_pi_s > self.pi_thresh).view(-1)
+        boxes_s = boxes_s[:, keep_idxes]
+        confs_s = confs_s[:, keep_idxes]
 
-            if len(cls_boxes_sc) == 0:
+        for c in range(self.n_classes - 1):
+            boxes_sc = boxes_s[c]
+            confs_sc = confs_s[c]
+
+            if len(boxes_sc) == 0:
                 continue
 
-            # print(cls_boxes_sc.shape)
-            keep_idxes = torch.nonzero(norm_pi_s > self.pi_thresh).view(-1)
-            cls_boxes_sc = cls_boxes_sc[keep_idxes]
-            cls_confs_sc = cls_confs_sc[keep_idxes]
-
-            # print(cls_boxes_sc.shape)
-            keep_idxes = torch.nonzero(cls_confs_sc > self.conf_thresh).view(-1)
-            cls_boxes_sc = cls_boxes_sc[keep_idxes]
-            cls_confs_sc = cls_confs_sc[keep_idxes]
+            keep_idxes = torch.nonzero(confs_sc > self.conf_thresh).view(-1)
+            boxes_sc = boxes_sc[keep_idxes]
+            confs_sc = confs_sc[keep_idxes]
             if keep_idxes.shape[0] == 0:
                 continue
-            # print(cls_boxes_sc.shape)
-            # print('')
 
             if self.nms_thresh <= 0.0:
-                cls_boxes_sc, cls_confs_sc = lib_util.sort_boxes_s(cls_boxes_sc, cls_confs_sc)
-                cls_boxes_sc, cls_confs_sc = cls_boxes_sc[:1], cls_confs_sc[:1]
+                boxes_sc, confs_sc = lib_util.sort_boxes_s(boxes_sc, confs_sc)
+                boxes_sc, confs_sc = boxes_sc[:1], confs_sc[:1]
             elif self.nms_thresh > 1.0:
                 pass
             else:
-                keep_idxes = nms(cls_boxes_sc, cls_confs_sc, self.nms_thresh)
+                keep_idxes = nms(boxes_sc, confs_sc, self.nms_thresh)
                 keep_idxes = keep_idxes.long().view(-1)
-                cls_boxes_sc = cls_boxes_sc[keep_idxes]
-                cls_confs_sc = cls_confs_sc[keep_idxes].unsqueeze(dim=1)
+                boxes_sc = boxes_sc[keep_idxes]
+                confs_sc = confs_sc[keep_idxes].unsqueeze(dim=1)
 
-            labels_css = torch.zeros(cls_confs_sc.shape).float().cuda()
+            labels_css = torch.zeros(confs_sc.shape).float().cuda()
             labels_css += c
 
-            cls_boxes_sl.append(cls_boxes_sc)
-            cls_confs_sl.append(cls_confs_sc)
-            cls_labels_sl.append(labels_css)
-        # exit()
+            boxes_sl.append(boxes_sc)
+            confs_sl.append(confs_sc)
+            labels_sl.append(labels_css)
 
-        if len(cls_boxes_sl) > 0:
-            boxes_s = torch.cat(cls_boxes_sl, dim=0)
-            confs_s = torch.cat(cls_confs_sl, dim=0)
-            labels_s = torch.cat(cls_labels_sl, dim=0)
+        if len(boxes_sl) > 0:
+            boxes_s = torch.cat(boxes_sl, dim=0)
+            confs_s = torch.cat(confs_sl, dim=0)
+            labels_s = torch.cat(labels_sl, dim=0)
         else:
             boxes_s = torch.zeros((1, 4)).float().cuda()
             confs_s = torch.zeros((1, 1)).float().cuda()
             labels_s = torch.zeros((1, 1)).float().cuda()
-
-        boxes_s, confs_s, labels_s = lib_util.sort_boxes_s(boxes_s, confs_s, labels_s)
         return boxes_s, confs_s, labels_s
 
     def forward(self, mu, prob, pi):
-        # print('mu', torch.min(mu), torch.max(mu))
         boxes = mu.transpose(1, 2).clone()
         boxes[:, :, [0, 2]] = boxes[:, :, [0, 2]] * (self.input_size[1] / self.coord_range[1])
         boxes[:, :, [1, 3]] = boxes[:, :, [1, 3]] * (self.input_size[0] / self.coord_range[0])
@@ -85,7 +76,7 @@ class MMODPostProc(object):
         boxes_l, confs_l, labels_l = list(), list(), list()
         for i, (boxes_s, confs_s) in enumerate(zip(boxes, confs)):
             boxes_s, confs_s, labels_s = self.__filter_cls_boxes_s__(boxes_s, confs_s, pi[i, 0])
-            boxes_l.append(boxes_s[:self.max_boxes])
-            confs_l.append(confs_s[:self.max_boxes])
-            labels_l.append(labels_s[:self.max_boxes] + 1)
+            boxes_l.append(boxes_s)
+            confs_l.append(confs_s)
+            labels_l.append(labels_s + 1)
         return boxes_l, confs_l, labels_l
