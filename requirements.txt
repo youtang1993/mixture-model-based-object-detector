@@ -1,5 +1,6 @@
 numpy==1.16.2
 opencv-python==4.0.0.21
+Cython
 Pillow==5.4.1
 pycocotools==2.0.0
 scikit-image==0.15.0

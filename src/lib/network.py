@@ -83,13 +83,12 @@ class MMODNetwork(NetworkABC):
 
     def __sycn_batch_and_device__(self, batch_size, device_idx):
         if self.def_coord.device.index != device_idx:
-            xy_maps = [xy_map[:batch_size].cuda(device_idx) for xy_map in self.xy_maps]
-            def_coord = self.def_coord[:batch_size].cuda(device_idx)
-            limit_scale = self.limit_scale[:batch_size].cuda(device_idx)
-        else:
-            xy_maps = [xy_map[:batch_size] for xy_map in self.xy_maps]
-            def_coord = self.def_coord[:batch_size]
-            limit_scale = self.limit_scale[:batch_size]
+            self.xy_maps = [xy_map.cuda(device_idx) for xy_map in self.xy_maps]
+            self.def_coord = self.def_coord.cuda(device_idx)
+            self.limit_scale = self.limit_scale.cuda(device_idx)
+        xy_maps = [xy_map[:batch_size] for xy_map in self.xy_maps]
+        def_coord = self.def_coord[:batch_size]
+        limit_scale = self.limit_scale[:batch_size]
         return xy_maps, def_coord, limit_scale
 
     def forward(self, image, boxes=None, labels=None, n_boxes=None, loss=False):
