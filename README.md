@@ -15,7 +15,7 @@ Directory Structure
 ```
 (root-directory)
 ├── README.md
-├── (shell-scrips-file.sh)
+├── run_mmod.py
 ├── src
 │   └── (python-source-file.py)
 ├── result
@@ -41,7 +41,7 @@ Training
 --training_args="{'max_iter': maximum number of iterations, ...}"
 
 # command
-.../(root-directory)$ bash run_mmod_(voc or coco).sh
+.../(root-directory)$ bash run_mmod.sh
 ```
 Test
 ```
